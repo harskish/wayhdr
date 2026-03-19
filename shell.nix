@@ -31,20 +31,21 @@ pkgs.mkShell {
     # Used by GLFW portal/file-dialog integration in this fork
     dbus
     libffi
+
+    # Python demo
+    python312Packages.python
+    python312Packages.pyopengl
   ];
 
-  shellHook = ''
-    export CMAKE_GENERATOR=Ninja
-    export LD_LIBRARY_PATH=${pkgs.lib.makeLibraryPath [
-      pkgs.libglvnd
-      pkgs.wayland
-      pkgs.libxkbcommon
-      pkgs.xorg.libX11
-      pkgs.xorg.libXrandr
-      pkgs.xorg.libXinerama
-      pkgs.xorg.libXcursor
-      pkgs.xorg.libXi
-      pkgs.xorg.libXext
-    ]}:$LD_LIBRARY_PATH
-  '';
+  LD_LIBRARY_PATH = pkgs.lib.makeLibraryPath (with pkgs; [
+    libglvnd
+    wayland
+    libxkbcommon
+    xorg.libX11
+    xorg.libXrandr
+    xorg.libXinerama
+    xorg.libXcursor
+    xorg.libXi
+    xorg.libXext
+  ]);
 }
