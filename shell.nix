@@ -35,6 +35,7 @@ pkgs.mkShell {
     # Python demo
     python312Packages.python
     python312Packages.pyopengl
+    python312Packages.numpy
   ];
 
   LD_LIBRARY_PATH = pkgs.lib.makeLibraryPath (with pkgs; [
