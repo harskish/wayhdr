@@ -34,12 +34,19 @@ pkgs.mkShell {
 
     # Python demo
     python312Packages.python
-    python312Packages.pyopengl
-    python312Packages.numpy
+    python312Packages.uv
+    python312Packages.venvShellHook
   ];
+
+  venvDir = "./.venv";
+  
+  postVenvCreation = ''
+    uv pip install imgui-bundle PyOpenGL glfw
+  '';
 
   LD_LIBRARY_PATH = pkgs.lib.makeLibraryPath (with pkgs; [
     libglvnd
+    zlib
     wayland
     libxkbcommon
     xorg.libX11
@@ -48,5 +55,6 @@ pkgs.mkShell {
     xorg.libXcursor
     xorg.libXi
     xorg.libXext
+    stdenv.cc.cc
   ]);
 }
