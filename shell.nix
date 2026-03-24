@@ -32,6 +32,8 @@ pkgs.mkShell {
     dbus
     libffi
 
+    pkgs.bashInteractive # direnv shopt errors
+
     # Python demo
     python312Packages.python
     python312Packages.uv

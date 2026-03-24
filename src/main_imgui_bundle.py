@@ -2,61 +2,8 @@
 import ctypes
 import os
 import sys
-from pathlib import Path
 
-
-GLFW_OPENGL_API = 0x00030001
-GLFW_OPENGL_CORE_PROFILE = 0x00032001
-
-GLFW_CLIENT_API = 0x00022001
-GLFW_CONTEXT_VERSION_MAJOR = 0x00022002
-GLFW_CONTEXT_VERSION_MINOR = 0x00022003
-GLFW_OPENGL_FORWARD_COMPAT = 0x00022006
-GLFW_OPENGL_PROFILE = 0x00022008
-GLFW_SCALE_TO_MONITOR = 0x0002200C
-
-GLFW_RED_BITS = 0x00021001
-GLFW_GREEN_BITS = 0x00021002
-GLFW_BLUE_BITS = 0x00021003
-GLFW_ALPHA_BITS = 0x00021004
-GLFW_FLOATBUFFER = 0x00021011
-
-GLFW_RESIZABLE = 0x00020003
-GLFW_VISIBLE = 0x00020004
-
-GLFW_WAYLAND_COLOR_MANAGEMENT = 0x00026002
-
-
-def _workspace_root() -> Path:
-    return Path(__file__).resolve().parents[1]
-
-
-def _default_custom_glfw_candidates() -> list[Path]:
-    root = _workspace_root()
-    return [
-        root / "build" / "external" / "glfw" / "src" / "libglfw.so",
-        root / "build" / "external" / "glfw" / "src" / "libglfw.so.3",
-        root / "build" / "external" / "glfw" / "src" / "libglfw.so.3.4",
-    ]
-
-
-def configure_pyglfw_library() -> None:
-    # Respect explicit pyglfw override first.
-    if os.environ.get("PYGLFW_LIBRARY"):
-        return
-
-    # Backward-compatible bridge for this repo's previous env var.
-    wayhdr_glfw = os.environ.get("WAYHDR_GLFW_LIB")
-    if wayhdr_glfw:
-        os.environ["PYGLFW_LIBRARY"] = wayhdr_glfw
-        return
-
-    for candidate in _default_custom_glfw_candidates():
-        if candidate.exists():
-            os.environ["PYGLFW_LIBRARY"] = str(candidate)
-            return
-
-
+from wl_hdr import configure_pyglfw_library, GLFW_FLOATBUFFER, GLFW_WAYLAND_COLOR_MANAGEMENT
 configure_pyglfw_library()
 
 # Import glfw before imgui_bundle so pyglfw resolves with PYGLFW_LIBRARY.
@@ -64,7 +11,6 @@ import glfw  # type: ignore
 import OpenGL.GL as gl
 from imgui_bundle import imgui
 from imgui_bundle.python_backends.glfw_backend import GlfwRenderer
-
 
 def check_shader(shader: int, stage: str) -> None:
     ok = gl.glGetShaderiv(shader, gl.GL_COMPILE_STATUS)
@@ -135,10 +81,10 @@ def make_program() -> int:
 
 
 def set_buffer_hints(r: int, g: int, b: int, a: int, float_buffer: bool) -> None:
-    glfw.window_hint(GLFW_RED_BITS, r)
-    glfw.window_hint(GLFW_GREEN_BITS, g)
-    glfw.window_hint(GLFW_BLUE_BITS, b)
-    glfw.window_hint(GLFW_ALPHA_BITS, a)
+    glfw.window_hint(glfw.RED_BITS, r)
+    glfw.window_hint(glfw.GREEN_BITS, g)
+    glfw.window_hint(glfw.BLUE_BITS, b)
+    glfw.window_hint(glfw.ALPHA_BITS, a)
     glfw.window_hint(GLFW_FLOATBUFFER, glfw.TRUE if float_buffer else glfw.FALSE)
 
 
@@ -185,15 +131,15 @@ def main() -> int:
     imgui.create_context()
 
     try:
-        glfw.window_hint(GLFW_CLIENT_API, GLFW_OPENGL_API)
-        glfw.window_hint(GLFW_CONTEXT_VERSION_MAJOR, 3)
-        glfw.window_hint(GLFW_CONTEXT_VERSION_MINOR, 3)
-        glfw.window_hint(GLFW_OPENGL_FORWARD_COMPAT, glfw.TRUE)
-        glfw.window_hint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE)
+        glfw.window_hint(glfw.CLIENT_API, glfw.OPENGL_API)
+        glfw.window_hint(glfw.CONTEXT_VERSION_MAJOR, 3)
+        glfw.window_hint(glfw.CONTEXT_VERSION_MINOR, 3)
+        glfw.window_hint(glfw.OPENGL_FORWARD_COMPAT, glfw.TRUE)
+        glfw.window_hint(glfw.OPENGL_PROFILE, glfw.OPENGL_CORE_PROFILE)
 
-        glfw.window_hint(GLFW_VISIBLE, glfw.TRUE)
-        glfw.window_hint(GLFW_RESIZABLE, glfw.TRUE)
-        glfw.window_hint(GLFW_SCALE_TO_MONITOR, glfw.TRUE)
+        glfw.window_hint(glfw.VISIBLE, glfw.TRUE)
+        glfw.window_hint(glfw.RESIZABLE, glfw.TRUE)
+        glfw.window_hint(glfw.SCALE_TO_MONITOR, glfw.TRUE)
 
         window = create_window_with_fallbacks()
         if not window:
@@ -269,7 +215,7 @@ def main() -> int:
                     imgui.text("+/- or keypad +/- changes gain")
                     _, gain = imgui.slider_float("Gain", gain, 0.1, 16.0)
                     imgui.text(f"PYGLFW_LIBRARY={os.environ.get('PYGLFW_LIBRARY', '<unset>')}")
-                    imgui.text(f"Red bits: {glfw.get_window_attrib(window, GLFW_RED_BITS)}")
+                    imgui.text(f"Red bits: {glfw.get_window_attrib(window, glfw.RED_BITS)}")
                     imgui.end()
 
                     fbw, fbh = glfw.get_framebuffer_size(window)
