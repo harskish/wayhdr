@@ -43,7 +43,8 @@ pkgs.mkShell {
   venvDir = "./.venv";
   
   postVenvCreation = ''
-    uv pip install imgui-bundle PyOpenGL glfw
+    uv pip install imgui-bundle PyOpenGL glfw pillow
+    uv pip install -e ../pyviewer
   '';
 
   LD_LIBRARY_PATH = pkgs.lib.makeLibraryPath (with pkgs; [
